@@ -46,20 +46,29 @@
 
   <p id="msg"></p>
 
-  <!-- Admin full table -->
-  <div id="adminReport" style="margin-top:20px;">
-    <h3>সকল হাজিরা রিপোর্ট (Admin)</h3>
-    <table border="1" width="100%" id="reportTable">
-      <tr>
-        <th>তারিখ</th>
-        <th>ক্লাস</th>
-        <th>রোল</th>
-        <th>নাম</th>
-        <th>Status</th>
-        <th>শিক্ষক</th>
-      </tr>
-    </table>
-  </div>
+  <!-- Add inside #app div -->
+<div id="adminReport" style="margin-top:20px;">
+  <h3>সকল হাজিরা রিপোর্ট (Admin)</h3>
+
+  <label>ক্লাস: </label>
+  <select id="reportClassSelect" onchange="loadAdminReport()">
+    <option value="ALL">ALL</option>
+  </select>
+  <label>From: </label><input type="date" id="fromDate" onchange="loadAdminReport()">
+  <label>To: </label><input type="date" id="toDate" onchange="loadAdminReport()">
+  
+  <table border="1" width="100%" id="reportTable">
+    <tr>
+      <th>তারিখ</th>
+      <th>ক্লাস</th>
+      <th>রোল</th>
+      <th>নাম</th>
+      <th>Status</th>
+      <th>শিক্ষক</th>
+    </tr>
+  </table>
+</div>
+
 </div>
 
 <script src="app.js"></script>
