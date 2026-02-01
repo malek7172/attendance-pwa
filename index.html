@@ -17,13 +17,21 @@
 
 
 <div id="app" style="display:none">
-<select id="student"></select><br><br>
-<select id="attendanceStatus">
-<option>Present</option>
-<option>Absent</option>
-<option>Late</option>
-</select><br><br>
-<button onclick="save()">সংরক্ষণ</button>
+<label>ক্লাস নির্বাচন করুন</label><br>
+<select id="classSelect" onchange="loadClass()"></select>
+
+
+<form id="attendanceForm">
+<table border="1" width="100%" id="studentTable">
+<tr>
+<th>রোল</th><th>নাম</th><th>Present</th><th>Late</th>
+</tr>
+</table>
+<br>
+<button type="submit">হাজিরা সংরক্ষণ</button>
+</form>
+
+
 <p id="msg"></p>
 </div>
 
