@@ -5,7 +5,6 @@ let teacher = "";
 let teacherRole = "";
 let assignedClass = "";
 let pending = JSON.parse(localStorage.getItem("attendance") || "[]");
-let submittedClasses = [];
 
 const loginDiv = document.getElementById("login");
 const appDiv = document.getElementById("app");
@@ -13,20 +12,20 @@ const classSelect = document.getElementById("classSelect");
 const attendanceForm = document.getElementById("attendanceForm");
 const studentTable = document.getElementById("studentTable");
 const msg = document.getElementById("msg");
+const reportTable = document.getElementById("reportTable");
+const allPresentChk = document.getElementById("allPresent");
 
-// Load students
+// Load students from sheet
 fetch(WEB_APP_URL + "?action=students")
   .then(r => r.json())
-  .then(d => {
-    students = d.slice(1);
-  });
+  .then(d => { students = d.slice(1); });
 
 // Login
 function login() {
+  const pinInput = document.getElementById("pin").value.trim();
   fetch(WEB_APP_URL + "?action=teachers")
     .then(r => r.json())
     .then(d => {
-      const pinInput = document.getElementById("pin").value.trim();
       const found = d.slice(1).find(t => String(t[1]).trim() === pinInput);
       if (!found) { alert("ভুল পিন"); return; }
 
@@ -38,13 +37,14 @@ function login() {
       appDiv.style.display = "block";
 
       loadClassOptions();
+      if(teacherRole === "admin") loadAdminReport();
     });
 }
 
-// Load classes for dropdown
+// Load class options
 function loadClassOptions() {
   let classes = [];
-  if (teacherRole === "admin") {
+  if(teacherRole === "admin") {
     classes = [...new Set(students.map(s => s[2]))];
   } else {
     classes = [assignedClass];
@@ -54,14 +54,16 @@ function loadClassOptions() {
     classes.map(c => `<option value="${c}">${c}</option>`).join("");
 }
 
-// Load students for selected class
+// Load students table for selected class
 function loadClass() {
   const cls = classSelect.value;
-  if (!cls) return;
+  if(!cls) return;
 
-  // Check if attendance already submitted today
-  checkSubmitted(cls).then(alreadySubmitted => {
-    if (alreadySubmitted && teacherRole !== "admin") {
+  // Reset master checkbox
+  allPresentChk.checked = false;
+
+  checkSubmitted(cls).then(locked => {
+    if(locked && teacherRole !== "admin") {
       msg.innerText = "আজকের জন্য এই ক্লাসের হাজিরা ইতিমধ্যেই নেওয়া হয়েছে।";
       studentTable.innerHTML = "";
       return;
@@ -72,6 +74,7 @@ function loadClass() {
         <th>রোল</th><th>নাম</th><th>Present</th><th>Late</th>
       </tr>
     `;
+
     students.filter(s => s[2] === cls).forEach(s => {
       studentTable.innerHTML += `
         <tr>
@@ -87,21 +90,30 @@ function loadClass() {
 
 // Prevent Present + Late both checked
 function exclusiveCheck(chk, otherName) {
-  if (chk.checked) attendanceForm[otherName].checked = false;
+  if(chk.checked) attendanceForm[otherName].checked = false;
+}
+
+// Master checkbox: mark all Present
+function markAllPresent(master) {
+  const cls = classSelect.value;
+  students.filter(s => s[2] === cls).forEach(s => {
+    attendanceForm[`p_${s[0]}`].checked = master.checked;
+    attendanceForm[`l_${s[0]}`].checked = false;
+  });
 }
 
 // Submit attendance
 attendanceForm.addEventListener("submit", e => {
   e.preventDefault();
   const cls = classSelect.value;
-  if (!cls) return;
+  if(!cls) return;
 
   const today = new Date().toDateString();
 
   students.filter(s => s[2] === cls).forEach(s => {
     let status = "Absent";
-    if (attendanceForm[`p_${s[0]}`]?.checked) status = "Present";
-    if (attendanceForm[`l_${s[0]}`]?.checked) status = "Late";
+    if(attendanceForm[`p_${s[0]}`]?.checked) status = "Present";
+    if(attendanceForm[`l_${s[0]}`]?.checked) status = "Late";
 
     pending.push({
       studentId: s[0],
@@ -117,32 +129,68 @@ attendanceForm.addEventListener("submit", e => {
   msg.innerText = "✅ হাজিরা সংরক্ষিত (অফলাইন)";
 
   sync().then(() => {
-    studentTable.innerHTML = ""; // Clear table after submit
+    studentTable.innerHTML = ""; // Clear table
     msg.innerText = "☁️ শিটে পাঠানো হয়েছে। ক্লাস লক করা হয়েছে।";
+    loadAdminReport(); // Refresh admin report
   });
 });
 
 // Sync offline data to Google Sheet
 async function sync() {
-  if (!navigator.onLine || pending.length === 0) return;
-  await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(pending) });
+  if(!navigator.onLine || pending.length === 0) return;
+  await fetch(WEB_APP_URL, { method:"POST", body: JSON.stringify(pending) });
   pending = [];
   localStorage.removeItem("attendance");
 }
 
 // Check if class already submitted today
 async function checkSubmitted(cls) {
-  if (teacherRole === "admin") return false;
+  if(teacherRole === "admin") return false;
 
-  const res = await fetch(WEB_APP_URL + "?action=attendance"); // Need to add this in GS for admin check
-  const allData = await res.json(); // returns all rows
+  const res = await fetch(WEB_APP_URL + "?action=attendance");
+  const allData = await res.json();
   const today = new Date().toDateString();
 
-  const exists = allData.some(row => {
-    if (!row[0]) return false;
+  return allData.some(row => {
+    if(!row[0]) return false;
     const rowDate = new Date(row[0]).toDateString();
-    return rowDate === today && row[3] === cls; // row[3]=class
+    return rowDate === today && row[3] === cls; // row[3]=Class
   });
-
-  return exists;
 }
+
+// Admin full report
+async function loadAdminReport() {
+  if(teacherRole !== "admin") { reportTable.style.display="none"; return; }
+  reportTable.style.display="table";
+
+  const res = await fetch(WEB_APP_URL + "?action=attendance");
+  const allData = await res.json();
+
+  // Clear previous table
+  reportTable.innerHTML = `
+    <tr>
+      <th>তারিখ</th>
+      <th>ক্লাস</th>
+      <th>রোল</th>
+      <th>নাম</th>
+      <th>Status</th>
+      <th>শিক্ষক</th>
+    </tr>
+  `;
+
+  allData.slice(1).forEach(row => {
+    reportTable.innerHTML += `
+      <tr>
+        <td>${row[0]}</td>
+        <td>${row[3]}</td>
+        <td>${row[4]}</td>
+        <td>${row[2]}</td>
+        <td>${row[5]}</td>
+        <td>${row[6]}</td>
+      </tr>
+    `;
+  });
+}
+
+// Sync when back online
+window.addEventListener("online", sync);
