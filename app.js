@@ -60,7 +60,7 @@ function loadClass() {
   if(!cls) return;
 
   // Reset master checkbox
-  allPresentChk.checked = true;
+  allPresentChk.checked = false;
 
   checkSubmitted(cls).then(locked => {
     if(locked && teacherRole !== "admin") {
