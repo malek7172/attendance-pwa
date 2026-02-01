@@ -1,31 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
-<title>Attendance App</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>হাজিরা অ্যাপ</title>
 <link rel="manifest" href="manifest.json">
 </head>
 <body>
-<h2>📋 Student Attendance</h2>
+<h2>📋 ছাত্র হাজিরা</h2>
 
 
-<form id="attendanceForm">
-<input id="id" placeholder="Student ID" required><br><br>
-<input id="name" placeholder="Student Name" required><br><br>
+<div id="login">
+<input id="pin" placeholder="শিক্ষকের পিন">
+<button onclick="login()">লগইন</button>
+</div>
 
 
+<div id="app" style="display:none">
+<select id="student"></select><br><br>
 <select id="status">
-<option value="Present">Present</option>
-<option value="Absent">Absent</option>
+<option>Present</option>
+<option>Absent</option>
+<option>Late</option>
 </select><br><br>
-
-
-<button type="submit">Save</button>
-</form>
-
-
+<button onclick="save()">সংরক্ষণ</button>
 <p id="msg"></p>
+</div>
 
 
 <script src="app.js"></script>
