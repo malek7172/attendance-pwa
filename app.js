@@ -36,7 +36,7 @@ function save() {
 const s = students[student.selectedIndex];
 pending.push({
 studentId: s[0], name: s[1], class: s[2], roll: s[3],
-status: attendanceStatus.value, teacher //document.getElementById('attendanceStatus').value
+status: document.getElementById('attendanceStatus').value
 });
 localStorage.setItem('attendance', JSON.stringify(pending));
 msg.innerText = '✅ অফলাইনে সংরক্ষিত';
