@@ -1,4 +1,4 @@
-const WEB_APP_URL = "PASTE_WEB_APP_URL_HERE";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwdtJE_kAcyXEK8bacFvB7TXtFCMLbtLuK8xDU0fEpnQc9qfUU5J1_2X-Jgf98yyC9c/exec";
 
 
 let attendance = JSON.parse(localStorage.getItem("attendance") || "[]");
