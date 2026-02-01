@@ -5,20 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>হাজিরা অ্যাপ</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    table, th, td { border: 1px solid #000; border-collapse: collapse; }
+    th, td { padding: 5px; text-align: center; }
+    input:disabled { background-color: #eee; }
+  </style>
 </head>
 <body>
 
 <h2>📋 ছাত্র হাজিরা</h2>
 
-<!-- LOGIN -->
 <div id="login">
   <input id="pin" placeholder="শিক্ষকের পিন">
   <button onclick="login()">লগইন</button>
 </div>
 
-<!-- APP -->
 <div id="app" style="display:none">
-
   <label>ক্লাস নির্বাচন করুন</label><br>
   <select id="classSelect" onchange="loadClass()"></select>
 
