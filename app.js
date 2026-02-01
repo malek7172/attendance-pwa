@@ -210,6 +210,17 @@ async function loadAdminReport() {
     `;
   });
 }
+function markAllPresent(master) {
+  const cls = classSelect.value;
+  if(!cls) return;
+  
+  students.filter(s => s[2] === cls).forEach(s => {
+    const pChk = attendanceForm[`p_${s[0]}`];
+    const lChk = attendanceForm[`l_${s[0]}`];
+    if(pChk) pChk.checked = master.checked;
+    if(lChk) lChk.checked = false;
+  });
+}
 
 
 // Sync when back online
