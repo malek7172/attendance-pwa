@@ -163,10 +163,22 @@ async function loadAdminReport() {
   if(teacherRole !== "admin") { reportTable.style.display="none"; return; }
   reportTable.style.display="table";
 
+  // Populate class filter
+  const reportClass = document.getElementById("reportClassSelect");
+  if(reportClass.options.length <= 1){
+    const classes = [...new Set(students.map(s=>s[2]))];
+    classes.forEach(c=>{
+      reportClass.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+  }
+
+  const from = document.getElementById("fromDate").value;
+  const to = document.getElementById("toDate").value;
+
   const res = await fetch(WEB_APP_URL + "?action=attendance");
   const allData = await res.json();
-
-  // Clear previous table
+  
+  // Clear table
   reportTable.innerHTML = `
     <tr>
       <th>তারিখ</th>
@@ -179,6 +191,13 @@ async function loadAdminReport() {
   `;
 
   allData.slice(1).forEach(row => {
+    const rowDate = new Date(row[0]);
+    if(from && rowDate < new Date(from)) return;
+    if(to && rowDate > new Date(to)) return;
+
+    const selectedClass = reportClass.value;
+    if(selectedClass !== "ALL" && row[3] !== selectedClass) return;
+
     reportTable.innerHTML += `
       <tr>
         <td>${row[0]}</td>
@@ -191,6 +210,7 @@ async function loadAdminReport() {
     `;
   });
 }
+
 
 // Sync when back online
 window.addEventListener("online", sync);
