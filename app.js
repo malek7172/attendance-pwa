@@ -1,5 +1,4 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwdtJE_kAcyXEK8bacFvB7TXtFCMLbtLuK8xDU0fEpnQc9qfUU5J1_2X-Jgf98yyC9c/exec";
-
 let students = [];
 let teacher = "";
 let pending = JSON.parse(localStorage.getItem('attendance') || '[]');
@@ -19,13 +18,17 @@ function login() {
 fetch(WEB_APP_URL + '?action=teachers')
 .then(r => r.json())
 .then(d => {
-const found = d.slice(1).find(t => t[1] === pin.value);
+const pinInput = pin.value.trim();
+const found = d.slice(1).find(t => String(t[1]).trim() === pinInput);
 if (found) {
 teacher = found[0];
-loginDiv.style.display = 'none';
-app.style.display = 'block';
-} else alert('ভুল পিন');
-});
+document.getElementById('login').style.display = 'none';
+document.getElementById('app').style.display = 'block';
+} else {
+alert('ভুল পিন');
+}
+})
+.catch(() => alert('নেটওয়ার্ক সমস্যা'));
 }
 
 
@@ -53,3 +56,4 @@ msg.innerText = '☁️ শিটে পাঠানো হয়েছে';
 
 
 window.addEventListener('online', sync);
+
